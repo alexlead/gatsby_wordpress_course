@@ -1,5 +1,5 @@
 const path = require("path");
-const {assignIds} = require("@webdeveducation/wp-block-tools");
+const {assignIds, assignGatsbyImage} = require("@webdeveducation/wp-block-tools");
 const fs = require("fs");
 
 exports.createPages = async ({actions, graphql}) => {
@@ -18,6 +18,7 @@ exports.createPages = async ({actions, graphql}) => {
             uri
           }
         }
+        wpMediaItem {gatsbyImage(width:1000)}
       } 
     `);
 
@@ -30,12 +31,13 @@ exports.createPages = async ({actions, graphql}) => {
     for(let i=0; i < data.allWpPage.nodes.length; i++) {
         const page = data.allWpPage.nodes[i];
         let blocks = page.blocks;
-        blocks = assignIds(blocks)
+        blocks = assignIds(blocks);
+        blocks = await assignGatsbyImage({blocks, graphql, coreMediaText: true});
         createPage({
            path: page.uri,
            component:  pageTemplate,
            context: {
-            blocks,
+            blocks
            }
         })
     }
